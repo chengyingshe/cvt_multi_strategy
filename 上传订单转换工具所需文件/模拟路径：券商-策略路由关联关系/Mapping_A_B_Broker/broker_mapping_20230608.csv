@@ -1,0 +1,10 @@
+BrokerName,BrokerNo,StgRoute,TargetPath
+东吴证券:机构部,1000811,/home/atgouser/ATGO/merge_broker_stg_route/data/a_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1000811/103/stg_route_20230608.dat
+财通证券:第一套,1000211,/home/atgouser/ATGO/merge_broker_stg_route/data/a_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1000211/103/stg_route_20230608.dat
+财通证券:第二套,1000212,/home/atgouser/ATGO/merge_broker_stg_route/data/a_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1000212/103/stg_route_20230608.dat
+国泰君安:销交,1001511,/home/atgouser/ATGO/merge_broker_stg_route/data/a_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1001511/103/stg_route_20230608.dat
+东莞证券,1004311,/home/atgouser/ATGO/merge_broker_stg_route/data/a_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1004311/103/stg_route_20230608.dat
+华鑫证券,1002011,/home/atgouser/ATGO/merge_broker_stg_route/data/b_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1002011/103/stg_route_20230608.dat
+涵德_华创,1005611,/home/atgouser/ATGO/merge_broker_stg_route/data/b_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1005611/103/stg_route_20230608.dat
+国联证券,1001411,/home/atgouser/ATGO/merge_broker_stg_route/data/b_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1001411/103/stg_route_20230608.dat
+信达证券,1002711,/home/atgouser/ATGO/merge_broker_stg_route/data/b_stg_route/stg_route_20230608.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1002711/103/stg_route_20230608.dat
