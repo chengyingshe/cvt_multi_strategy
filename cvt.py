@@ -1,6 +1,7 @@
 import configparser
 import os
 import re
+import pandas as pd
 
 has_err = False
 
@@ -36,6 +37,18 @@ def get_config():
     if has_err:
         raise Exception('配置文件异常')
 
+# 获取路径中所有的excel文件路径
+def get_all_excel_path(dir):
+    pass
+
+# 从df数据中获取origin_cname列，然后生成new_cname列
+# new_cdata_cvt_fun为转换function
+def cvt_col_from_to(df, origin_cname, new_cname, new_cdata_cvt_fun=None):
+    clist = df[origin_cname].values
+    if new_cdata_cvt_fun:
+        clist = [new_cdata_cvt_fun(c) for c in clist]
+    cdata = pd.DataFrame({new_cname: clist})
+    return cdata
 
 
 if __name__ == '__main__':
