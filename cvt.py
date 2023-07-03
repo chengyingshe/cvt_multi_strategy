@@ -17,18 +17,18 @@ def check_path_exists(path, err, new=False):
             print(f'路径 {path} 不存在，自动创建该路径')
             os.mkdir(path)
 
-def get_config():
+def get_config():  #解析配置文件
     config_file_path = './config.ini'
     if not os.path.exists(config_file_path):
         raise Exception('当前路径下不存在配置文件 config.ini')
     config = configparser.ConfigParser()
     config.read(config_file_path, encoding='utf-8')
     atgo_dir = config.get('Config', 'ATGO')
-    check_path_exists(atgo_dir, 'ATGO解算文件路径错误')
+    check_path_exists(atgo_dir, 'ATGO结算文件路径错误')
     ato_dir = config.get('Config', 'ATO')
-    check_path_exists(ato_dir, 'ATO解算文件路径错误')
+    check_path_exists(ato_dir, 'ATO结算文件路径错误')
     atx_dir = config.get('Config', 'ATX')
-    check_path_exists(atx_dir, 'ATX解算文件路径错误')
+    check_path_exists(atx_dir, 'ATX结算文件路径错误')
     atable = config.get('Config', 'client_broker_association_table')
     check_path_exists(atable, '客户-券商关联表文件不存在')
     mapping = config.get('Config', 'Mapping_A_B_Broker_Dir')
@@ -37,6 +37,15 @@ def get_config():
     check_path_exists(output_dir, '', True)
     if has_err:
         raise Exception('配置文件异常')
+    result = {
+    "atgo_dir": atgo_dir,
+    "ato_dir": ato_dir,
+    "atx_dir": atx_dir,
+    "atable": atable,
+    "mapping": mapping,
+    "output_dir": output_dir,
+    }
+    return result
 
 # 获取路径中所有的excel文件路径
 def get_all_excel_path(dir):
@@ -46,7 +55,7 @@ def get_all_excel_path(dir):
     return excel_files
 
 # 从df数据中获取origin_cname列，然后生成new_cname列
-# new_cdata_cvt_fun为转换function
+# new_cdata_cvt_fun为转换function   要写转换函数
 def cvt_col_from_to(df, origin_cname, new_cname, new_cdata_cvt_fun=None):
     clist = df[origin_cname].values
     if new_cdata_cvt_fun:
@@ -59,4 +68,8 @@ def cvt():
     pass
 
 if __name__ == '__main__':
+    cvt_config=get_config()
+    print(cvt_config)
+    
+    
     pass
