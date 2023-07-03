@@ -1,4 +1,5 @@
 import configparser
+import glob
 import os
 import re
 import pandas as pd
@@ -39,7 +40,10 @@ def get_config():
 
 # 获取路径中所有的excel文件路径
 def get_all_excel_path(dir):
-    pass
+    excel_files = glob.glob(os.path.join(dir, "*.xlsx"))  # 获取所有后缀为xlsx的文件
+    excel_files.extend(glob.glob(os.path.join(dir, "*.xls")))  # 获取所有后缀为xls的文件
+    excel_files.extend(glob.glob(os.path.join(dir, "*.csv")))
+    return excel_files
 
 # 从df数据中获取origin_cname列，然后生成new_cname列
 # new_cdata_cvt_fun为转换function
@@ -50,6 +54,9 @@ def cvt_col_from_to(df, origin_cname, new_cname, new_cdata_cvt_fun=None):
     cdata = pd.DataFrame({new_cname: clist})
     return cdata
 
+# 主函数
+def cvt():
+    pass
 
 if __name__ == '__main__':
     pass
