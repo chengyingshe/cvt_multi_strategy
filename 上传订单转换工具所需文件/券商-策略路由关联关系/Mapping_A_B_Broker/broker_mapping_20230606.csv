@@ -1,0 +1,3 @@
+BrokerName,BrokerNo,StgRoute,TargetPath
+东吴证券:机构部,1000811,/home/atgouser/ATGO/merge_broker_stg_route/data/a_stg_route/stg_route_20230606.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1000811/103/stg_route_20230606.dat
+华鑫证券,1002011,/home/atgouser/ATGO/merge_broker_stg_route/data/b_stg_route/stg_route_20230606.csv,/home/atgouser/ATGO/signal_mult_sig_route_pub/cfgfile/strategy_dir/1002011/103/stg_route_20230606.dat

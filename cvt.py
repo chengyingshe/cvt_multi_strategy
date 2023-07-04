@@ -18,13 +18,13 @@ def check_path_exists(path, err, new=False, need_have_err=True):
             print(f'路径 {path} 不存在，自动创建该路径')
             os.mkdir(path)
 
-
 atgo_dir = ''
 ato_dir = ''
 atx_dir = ''
 atable = ''
 mapping_broker_dir = ''
 output_dir = ''
+
 def get_config():  # 解析配置文件
     global atgo_dir, atx_dir, ato_dir, atable, mapping_broker_dir, output_dir
     config_file_path = './config.ini'
@@ -43,19 +43,9 @@ def get_config():  # 解析配置文件
     mapping_broker_dir = config.get('Config', 'Mapping_A_B_Broker_Dir')
     check_path_exists(mapping_broker_dir, 'Mapping_A_B_Broker文件夹路径错误')
     output_dir = config.get('Config', 'output_dir')
-    check_path_exists(output_dir, '', True)
+    check_path_exists(output_dir, '', True, need_have_err=False)
     if has_err:
         raise Exception('配置文件异常')
-    # result = {
-    #     "atgo_dir": atgo_dir,
-    #     "ato_dir": ato_dir,
-    #     "atx_dir": atx_dir,
-    #     "atable": atable,
-    #     "mapping_broker_dir": mapping_broker_dir,
-    #     "output_dir": output_dir,
-    # }
-    # return result
-
 
 # 获取路径中所有的excel文件路径
 def get_all_excel_path(pdir):
@@ -63,7 +53,6 @@ def get_all_excel_path(pdir):
     excel_files.extend(glob.glob(os.path.join(pdir, "*.xls")))  # 获取所有后缀为xls的文件
     excel_files.extend(glob.glob(os.path.join(pdir, "*.csv")))
     return excel_files
-
 
 # 从df数据中获取origin_cname列，然后生成new_cname列
 # new_cdata_cvt_fun为转换function   要写转换函数
@@ -74,12 +63,6 @@ def cvt_col_from_to(df, origin_cname, new_cname, new_cdata_cvt_fun=None):
     cdata = pd.DataFrame({new_cname: clist})
     return cdata
 
-
-# 主函数
-def cvt():
-    pass
-
-
 market_type = ['无效', '深交所', '上交所', '中金所', '上期所', '大商所', '郑商所', '能源交易所', '北交所', '港股通(深)', '港股通(沪)', '港交所']
 order_type = ['无效', '限价委托', '即时成交剩余转撤销', '最优五档即时成交剩余转限价', '最优五档即时成交剩余转撤销', '全部成交或撤销', '本方最优价格', '对方最优价格', '期权限价申报FOK',
               '盘后固定价格', '最新价', '昨收价', '涨停价', '跌停价', '买1', '买2', '买3', '买4', '买5', '卖1', '卖2', '卖3', '卖4', '卖5']
@@ -87,16 +70,52 @@ side = ['无效', '买入', '卖出']
 order_status = ['无效', '未报', '已报', '部成', '已成', '已撤', '待撤', '废单', '部撤', '内部废单', '内部撤单', '待报', '撤单拒绝']
 glob_date = ''
 
+
 def get_index_from_list(li, v, not_found=0):
     if v in li:
         return li.index(v)
     return not_found
 
-def get_ato_excel_path_list_by_date(excel_dir, date):
-    # return [[委托查询 成交查询 绩效查询]]
-    os.listdir()
-    excel_files = glob.glob(os.path.join(excel_dir, f'*{date}.xlsx'))  # 获取所有后缀为xlsx的文件
-    return excel_files
+
+def get_excel_path_list_from_dir(file_dir, date, *args):  # 传入不定长（正则表达式）
+    # [[file11, file21,...],[file21, file22,...],...]
+    # ex: [[委托查询 成交查询 绩效查询]]
+    all_list = []
+    li = os.listdir(file_dir)
+
+
+def get_client_broker_map(file_path):
+    df = pd.read_excel(file_path)
+    account_user = df['account_user'].values
+    code = df['券商编号'].values
+    return dict(zip(account_user, code))
+
+
+def get_algo_type(account_user, symbol, client_broker_map, mapping_broker_dir, date):
+    # symbol：证券代码
+    if account_user not in client_broker_map:
+        return 103
+    broker_code = client_broker_map[account_user]
+    broker_mapping_file_path = f'broker_mapping_{date}.csv'
+    if not os.path.exists(os.path.join(mapping_broker_dir, broker_mapping_file_path)):
+        return 103
+    broker_mapping_df = pd.read_excel(broker_mapping_file_path)
+    stgroute = broker_mapping_df[broker_mapping_df['BrokerNo'] == broker_code]['StgRoute'].values
+    if stgroute.empty:  # 未找到对应的策略
+        return 103
+    stg_df = pd.read_csv(stgroute[0])  # 读取策略文件
+    has_accountS = (stg_df['accountS'] == account_user).values
+    has_symbol = [s != '-1' and s.split('.')[0] == symbol for s in stg_df['symbol'].values]
+    if not stg_df[has_accountS and has_symbol].empty:
+        return 107
+    if not stg_df[has_accountS].empty:
+        return 104
+    return 103
+
+def save_csv_to(df, type=0):  # 0->子单，1->母单
+    output_file_name = 'ActualOrder.csv' if type == 0 else 'AlgoOrder.csv'
+    df.to_csv(os.path.join(output_dir, output_file_name), index=False)
+
 
 def cvt_ato_actualorder_0(df):
     global glob_date
@@ -123,15 +142,36 @@ def cvt_ato_actualorder_0(df):
         dt.append(date[i].replace('/', '') + time[i].replace(':', ''))
     weituoshijian = pd.DataFrame({'委托时间': dt})
     chengjiaojiage = cvt_col_from_to(df, '成交均价(港股通单位为港币)', '成交价格')
-    # 成交时间
-    chengjiaoshijian = cvt_col_from_to(df, '成交均价(港股通单位为港币)', '成交时间')
+    chengjiaoshuliang = cvt_col_from_to(df, '成交数量', '成交数量')
+    # 成交时间（使用委托时间）
+    chengjiaoshijian = pd.DataFrame({'成交时间': dt})
     weituozhuangtai = cvt_col_from_to(df, '委托状态', '委托状态', lambda x: get_index_from_list(order_status, x))
     shouxufei = cvt_col_from_to(df, '总费用', '手续费')
     # 算法实例
+    '''
+    m = get_client_broker_map(atable)
+    account_user_list = df['资产账户名称'].values
+    symbol_list = df['证券代码'].values
+    algo_list = []
+    for i in range(len(account_user_list)):
+        algo_list.append(get_algo_type(account_user_list[i], symbol_list[i], m, mapping_broker_dir, glob_date))
+    suanfashili = pd.DataFrame({'算法实例': algo_list})
+    '''
+    suanfashili = pd.DataFrame({'算法实例': [103] * len(weituoshijian)})
+    return pd.concat(
+        [suanfazidanbianhao, suanfamudanbianhao, jiaoyiriqi, shichangleibie, zijinzhanghumingcheng, suanfaleixing,
+         suanfashili, suanfagongyingshang, zhengquandaima, weituoleixing, maimaifangxiang, weituojiage,
+         weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai, shouxufei], axis=1)
+
+# 主函数
+def cvt():
+    # ATO
+    get_config()
+    ato_path = '.\各产品线结算格式\ATO/委托查询_20230614.xlsx'
+    df = pd.read_excel(ato_path)
+    new_df = cvt_ato_actualorder_0(df)
+    save_csv_to(new_df, type=0)
 
 
 if __name__ == '__main__':
-    cvt_config = get_config()
-    print(cvt_config)
-
-    pass
+    cvt()
