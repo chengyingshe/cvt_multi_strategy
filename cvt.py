@@ -73,6 +73,33 @@ def cvt():
     pass
 
 
+market_type = ['无效', '深交所', '上交所', '中金所', '上期所', '大商所', '郑商所', '能源交易所', '北交所', '港股通(深)', '港股通(沪)', '港交所']
+order_type = ['无效', '限价委托', '即时成交剩余转撤销', '最优五档即时成交剩余转限价', '最优五档即时成交剩余转撤销', '全部成交或撤销', '本方最优价格', '对方最优价格', '期权限价申报FOK',
+              '盘后固定价格', '最新价', '昨收价', '涨停价', '跌停价', '买1', '买2', '买3', '买4', '买5', '卖1', '卖2']
+
+
+def get_index_from_list(li, v, not_found=0):
+    if v in li:
+        return li.index(v)
+    return not_found
+
+
+def cvt_ato_actualorder_1(df):
+    suanfazidanbianhao = cvt_col_from_to(df, '算法子单编号', '算法子单编号')
+    suanfamudanbianhao = cvt_col_from_to(df, '母单序号', '算法母单编号')
+    jiaoyiriqi = cvt_col_from_to(df, '委托日期', '交易日期', lambda x: x.replace('/', ''))
+    shichangleibie = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    zijinzhanghumingcheng = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
+    # 算法类型
+    suanfaleixing = cvt_col_from_to(df, '资产账户名称', '算法类型', lambda x: 0)  # 固定拆单0
+    # 算法实例
+
+    # 算法供应商
+    suanfagongyingshang = cvt_col_from_to(df, '资产账户名称', '算法供应商', lambda x: '多策略')  # 固定多策略
+    zhengquandaima = cvt_col_from_to(df, '证券代码', '证券代码')
+    weituoleixing = cvt_col_from_to(df, '价格类型', '委托类型')
+
+
 if __name__ == '__main__':
     cvt_config = get_config()
     print(cvt_config)
