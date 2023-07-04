@@ -5,14 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e639f0f1-f842-402a-bead-a4f576b5cd8d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATO/成交查询_20230614.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Untitled.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cvt.py" beforeDir="false" afterPath="$PROJECT_DIR$/cvt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/上传订单的母单表子单表及释义/Template/ActualOrder.csv" beforeDir="false" afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/上传订单的母单表子单表及释义/Template/ActualOrder.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/各产品线结算格式/ATO/委托查询_20230614.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/各产品线结算格式/ATO/委托查询_20230614.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/各产品线结算格式/ATO/绩效查询_母单绩效_汇总_20230614.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/各产品线结算格式/ATO/绩效查询_母单绩效_汇总_20230614.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/各产品线结算格式/T0/ATO/母单收益_20230630.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/各产品线结算格式/T0/ATO/母单收益_20230630.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/上传订单的母单表子单表及释义/Template/UploadOrderDescription.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/上传订单的母单表子单表及释义/Template/UploadOrderDescription.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/模拟路径：券商-策略路由关联关系/Mapping_A_B_Broker/broker_mapping_20230608.csv" beforeDir="false" afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/模拟路径：券商-策略路由关联关系/Mapping_A_B_Broker/broker_mapping_20230608.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,12 +28,15 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2RuJgwOK7nzPdn001YJ4pKGbPCU" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -62,5 +63,8 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>
