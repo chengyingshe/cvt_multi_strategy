@@ -66,7 +66,7 @@ def cvt_col_from_to(df, origin_cname, new_cname, new_cdata_cvt_fun=None):
 market_type = ['无效', '深交所', '上交所', '中金所', '上期所', '大商所', '郑商所', '能源交易所', '北交所', '港股通(深)', '港股通(沪)', '港交所']
 order_type = ['无效', '限价委托', '即时成交剩余转撤销', '最优五档即时成交剩余转限价', '最优五档即时成交剩余转撤销', '全部成交或撤销', '本方最优价格', '对方最优价格', '期权限价申报FOK',
               '盘后固定价格', '最新价', '昨收价', '涨停价', '跌停价', '买1', '买2', '买3', '买4', '买5', '卖1', '卖2', '卖3', '卖4', '卖5']
-side = ['无效', '买入', '卖出']
+side = ['无效', '买入', '卖出', '买劵还劵', '融券卖出', '卖券还款', '直接还款', '直接还券', '融券回购（逆回购）', '新股申购', '新债申购', '大宗买入', '大宗卖出']
 order_status = ['无效', '未报', '已报', '部成', '已成', '已撤', '待撤', '废单', '部撤', '内部废单', '内部撤单', '待报', '撤单拒绝']
 glob_date = ''
 
@@ -116,6 +116,14 @@ def save_csv_to(df, type=0):  # 0->子单，1->母单
     output_file_name = 'ActualOrder.csv' if type == 0 else 'AlgoOrder.csv'
     df.to_csv(os.path.join(output_dir, output_file_name), index=False)
 
+def time_apppend(df, origin_date_name, original_time_name, target_date_name):  # return一个20230504123800的dataFrame
+    date = df[origin_date_name].values
+    time = df[original_time_name].values
+    dt = []
+    for i in range(len(date)):
+        dt.append(date[i].replace('/', '') + time[i].replace(':', ''))
+    result = pd.DataFrame({target_date_name: dt})
+    return result
 
 def cvt_ato_actualorder_0(df):
     global glob_date
@@ -162,6 +170,51 @@ def cvt_ato_actualorder_0(df):
         [suanfazidanbianhao, suanfamudanbianhao, jiaoyiriqi, shichangleibie, zijinzhanghumingcheng, suanfaleixing,
          suanfashili, suanfagongyingshang, zhengquandaima, weituoleixing, maimaifangxiang, weituojiage,
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai, shouxufei], axis=1)
+
+
+def cvt_ato_algoorder_0(df):  # 拆单 母单
+    # global glob_date
+    sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
+    jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    zjzhmc = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
+    sflx = cvt_col_from_to(df, '母单状态', '算法类型', lambda x: 0)  # 固定拆单0
+    ### 算法实例
+    sfsl = cvt_col_from_to(df, '母单状态', '算法实例', lambda x: '103')
+    sfgys = cvt_col_from_to(df, '母单状态', '算法供应商', lambda x: '多策略')  # 固定多策略
+    rws = cvt_col_from_to(df, '母单数量', '任务数')
+    zqdm = cvt_col_from_to(df, '证券代码', '证券代码')
+    jylb = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    mdfx1 = cvt_col_from_to(df, '母单方向', '买卖方向1', lambda x: get_index_from_list(side, x))
+    mdfx2 = cvt_col_from_to(df, '母单方向', '买卖方向2', lambda x: '')
+    kssj = time_apppend(df, '交易日期', '母单开始时间', '开始时间')
+    jssj = time_apppend(df, '交易日期', '母单结束时间', '结束时间')
+    xdsj = time_apppend(df, '交易日期', '母单开始时间', '下单时间')
+
+    merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
+                           mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
+    return merged_df
+
+
+def cvt_ato_algoorder_1(df):  # T0 母单
+    sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
+    jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    zjzhmc = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
+    sflx = cvt_col_from_to(df, '产品名称', '算法类型', lambda x: 1)  # 固定T0  是1
+    ### 算法实例
+    sfsl = cvt_col_from_to(df, '产品名称', '算法实例', lambda x: '103')
+    sfgys = cvt_col_from_to(df, '产品名称', '算法供应商', lambda x: '多策略')  # 固定 多策略
+    rws = cvt_col_from_to(df, '任务数量', '任务数')
+    zqdm = cvt_col_from_to(df, '证券代码', '证券代码')
+    jylb = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    mdfx1 = cvt_col_from_to(df, '买入方向', '买卖方向1', lambda x: get_index_from_list(side, x))
+    mdfx2 = cvt_col_from_to(df, '卖出方向', '买卖方向2', lambda x: get_index_from_list(side, x))
+    kssj = cvt_col_from_to(df, '开始时间', '开始时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+    jssj = cvt_col_from_to(df, '结束时间', '结束时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+    xdsj = cvt_col_from_to(df, '开始时间', '下单时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+
+    merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
+                           mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
+    return merged_df
 
 # 主函数
 def cvt():
