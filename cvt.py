@@ -77,12 +77,11 @@ def get_index_from_list(li, v, not_found=0):
     return not_found
 
 
-def get_excel_path_list_from_dir(file_dir, date, *args):  # 传入不定长（正则表达式）
+def get_excel_path_list_from_dir(pats):  # 传入不定长（正则表达式）
     # [[file11, file21,...],[file21, file22,...],...]
     # ex: [[委托查询 成交查询 绩效查询]]
     all_list = []
-    li = os.listdir(file_dir)
-
+    []
 
 def get_client_broker_map(file_path):
     df = pd.read_excel(file_path)
@@ -90,8 +89,7 @@ def get_client_broker_map(file_path):
     code = df['券商编号'].values
     return dict(zip(account_user, code))
 
-
-def get_algo_type(account_user, symbol, client_broker_map, mapping_broker_dir, date):
+def get_algo_instance(account_user, symbol, client_broker_map, mapping_broker_dir, date):
     # symbol：证券代码
     if account_user not in client_broker_map:
         return 103
@@ -102,6 +100,8 @@ def get_algo_type(account_user, symbol, client_broker_map, mapping_broker_dir, d
     broker_mapping_df = pd.read_excel(broker_mapping_file_path)
     stgroute = broker_mapping_df[broker_mapping_df['BrokerNo'] == broker_code]['StgRoute'].values
     if stgroute.empty:  # 未找到对应的策略
+        return 103
+    if not os.path.exists(stgroute[0]):
         return 103
     stg_df = pd.read_csv(stgroute[0])  # 读取策略文件
     has_accountS = (stg_df['accountS'] == account_user).values
@@ -125,11 +125,34 @@ def time_apppend(df, origin_date_name, original_time_name, target_date_name):  #
     result = pd.DataFrame({target_date_name: dt})
     return result
 
+def get_excel_path_list_from_dir(file_dir, pat):  # pat为正则表达式数组
+    matching_files = []
+    # 遍历文件夹中的所有文件
+    for file_name in os.listdir(file_dir):
+        # 判断文件名开头是否匹配正则表达式1或正则表达式2，并且文件名末尾是否为指定日期
+        if any(re.match(regex, file_name) for regex in pat) :
+            # 将满足条件的文件添加到列表中
+            file_path = os.path.join(file_dir,file_name)
+            matching_files.append(file_path)
+
+    return matching_files
+
+def get_algo_instance_df(df, account_cname, symbol_cname, algo_type_cname):  # 资产账户名称 证券代码
+    m = get_client_broker_map(atable)
+    account_user_list = df[account_cname].values
+    symbol_list = df[symbol_cname].values
+    algo_list = []
+    for i in range(len(account_user_list)):
+        algo_list.append(get_algo_instance(account_user_list[i], symbol_list[i], m, mapping_broker_dir, glob_date))
+    suanfashili = pd.DataFrame({algo_type_cname: algo_list})
+    return suanfashili
+
 def cvt_ato_actualorder_0(df):
     global glob_date
     suanfazidanbianhao = cvt_col_from_to(df, '算法子单编号', '算法子单编号')
     suanfamudanbianhao = cvt_col_from_to(df, '母单序号', '算法母单编号')
     jiaoyiriqi = cvt_col_from_to(df, '委托日期', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jiaoyiriqi.iloc[0].values[0]
     shichangleibie = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
     zijinzhanghumingcheng = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
     # 算法类型
@@ -142,43 +165,63 @@ def cvt_ato_actualorder_0(df):
     weituojiage = cvt_col_from_to(df, '委托价格(港股通单位为港币)', '委托价格')
     weituoshuliang = cvt_col_from_to(df, '委托数量', '委托数量')
     # 委托时间
-    date = df['委托日期'].values
-    time = df['委托时间'].values
-    glob_date = date[0].replace('/', '')
-    dt = []
-    for i in range(len(date)):
-        dt.append(date[i].replace('/', '') + time[i].replace(':', ''))
-    weituoshijian = pd.DataFrame({'委托时间': dt})
+    weituoshijian = time_apppend(df, '委托日期', '委托时间', '委托时间')
     chengjiaojiage = cvt_col_from_to(df, '成交均价(港股通单位为港币)', '成交价格')
     chengjiaoshuliang = cvt_col_from_to(df, '成交数量', '成交数量')
     # 成交时间（使用委托时间）
-    chengjiaoshijian = pd.DataFrame({'成交时间': dt})
+    chengjiaoshijian = weituoshijian
     weituozhuangtai = cvt_col_from_to(df, '委托状态', '委托状态', lambda x: get_index_from_list(order_status, x))
     shouxufei = cvt_col_from_to(df, '总费用', '手续费')
     # 算法实例
-    '''
-    m = get_client_broker_map(atable)
-    account_user_list = df['资产账户名称'].values
-    symbol_list = df['证券代码'].values
-    algo_list = []
-    for i in range(len(account_user_list)):
-        algo_list.append(get_algo_type(account_user_list[i], symbol_list[i], m, mapping_broker_dir, glob_date))
-    suanfashili = pd.DataFrame({'算法实例': algo_list})
-    '''
+    # suanfashili = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
     suanfashili = pd.DataFrame({'算法实例': [103] * len(weituoshijian)})
     return pd.concat(
         [suanfazidanbianhao, suanfamudanbianhao, jiaoyiriqi, shichangleibie, zijinzhanghumingcheng, suanfaleixing,
          suanfashili, suanfagongyingshang, zhengquandaima, weituoleixing, maimaifangxiang, weituojiage,
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai, shouxufei], axis=1)
 
+def cvt_ato_actualorder_1(df):  # T0 子单
+    global glob_date
+    suanfazidanbianhao = cvt_col_from_to(df, '委托序号', '算法子单编号')
+    suanfamudanbianhao = cvt_col_from_to(df, '母单序号', '算法母单编号')
+    jiaoyiriqi = cvt_col_from_to(df, '日期', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jiaoyiriqi.iloc[0].values[0]
+    shichangleibie = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    zijinzhanghumingcheng = cvt_col_from_to(df, '资产账户', '资金账户名称')
+    # 算法类型
+    suanfaleixing = cvt_col_from_to(df, '资产账户', '算法类型', lambda x: 1)  # 固定拆单0
+    # 算法供应商
+    suanfagongyingshang = cvt_col_from_to(df, '资产账户', '算法供应商', lambda x: '多策略')  # 固定多策略
+    zhengquandaima = cvt_col_from_to(df, '证券代码', '证券代码')
+    weituoleixing = cvt_col_from_to(df, '价格类型', '委托类型', lambda x: get_index_from_list(order_type, x))
+    maimaifangxiang = cvt_col_from_to(df, '买卖方向', '买卖方向', lambda x: get_index_from_list(side, x))
+    weituojiage = cvt_col_from_to(df, '委托价格(港股通单位为港币)', '委托价格')
+    weituoshuliang = cvt_col_from_to(df, '委托数量', '委托数量')
+    # 委托时间
+    weituoshijian = time_apppend(df, '委托日期', '委托时间', '委托时间')
+    chengjiaojiage = cvt_col_from_to(df, '成交均价(港股通单位为港币)', '成交价格')
+    chengjiaoshuliang = cvt_col_from_to(df, '成交数量', '成交数量')
+    # 成交时间（使用委托时间）
+    chengjiaoshijian = weituoshijian
+    weituozhuangtai = cvt_col_from_to(df, '委托状态', '委托状态', lambda x: get_index_from_list(order_status, x))
+    shouxufei = cvt_col_from_to(df, '总费用', '手续费')
+    # 算法实例
+    # suanfashili = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
+    suanfashili = pd.DataFrame({'算法实例': [103] * len(weituoshijian)})
+    return pd.concat(
+        [suanfazidanbianhao, suanfamudanbianhao, jiaoyiriqi, shichangleibie, zijinzhanghumingcheng, suanfaleixing,
+         suanfashili, suanfagongyingshang, zhengquandaima, weituoleixing, maimaifangxiang, weituojiage,
+         weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai, shouxufei], axis=1)
 
 def cvt_ato_algoorder_0(df):  # 拆单 母单
-    # global glob_date
+    global glob_date
     sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
     jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jyrq.iloc[0].values[0]
     zjzhmc = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
     sflx = cvt_col_from_to(df, '母单状态', '算法类型', lambda x: 0)  # 固定拆单0
-    ### 算法实例
+    # 算法实例
+    # sfsl = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
     sfsl = cvt_col_from_to(df, '母单状态', '算法实例', lambda x: '103')
     sfgys = cvt_col_from_to(df, '母单状态', '算法供应商', lambda x: '多策略')  # 固定多策略
     rws = cvt_col_from_to(df, '母单数量', '任务数')
@@ -189,18 +232,142 @@ def cvt_ato_algoorder_0(df):  # 拆单 母单
     kssj = time_apppend(df, '交易日期', '母单开始时间', '开始时间')
     jssj = time_apppend(df, '交易日期', '母单结束时间', '结束时间')
     xdsj = time_apppend(df, '交易日期', '母单开始时间', '下单时间')
+    merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
+                           mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
+    return merged_df
+
+def cvt_ato_algoorder_1(df):  # T0 母单
+    global glob_date
+    sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
+    jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jyrq.iloc[0].values[0]
+    zjzhmc = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
+    sflx = cvt_col_from_to(df, '产品名称', '算法类型', lambda x: 1)  # 固定T0  是1
+    # 算法实例
+    # sfsl = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
+    sfsl = cvt_col_from_to(df, '产品名称', '算法实例', lambda x: '103')
+    sfgys = cvt_col_from_to(df, '产品名称', '算法供应商', lambda x: '多策略')  # 固定 多策略
+    rws = cvt_col_from_to(df, '任务数量', '任务数')
+    zqdm = cvt_col_from_to(df, '证券代码', '证券代码')
+    jylb = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    mdfx1 = cvt_col_from_to(df, '买入方向', '买卖方向1', lambda x: get_index_from_list(side, x))
+    mdfx2 = cvt_col_from_to(df, '卖出方向', '买卖方向2', lambda x: get_index_from_list(side, x))
+    kssj = cvt_col_from_to(df, '开始时间', '开始时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+    jssj = cvt_col_from_to(df, '结束时间', '结束时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+    xdsj = cvt_col_from_to(df, '开始时间', '下单时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
 
     merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
                            mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
     return merged_df
 
+side_atgo = ['', 'B', 'S', 'CB', 'SS']
+# 未完成
+def cvt_atgo_actualorder(df, algo_type):  # algo_type=0/1
+    global glob_date
+    suanfazidanbianhao = cvt_col_from_to(df, 'ClOrdID', '算法子单编号')
+    suanfamudanbianhao = cvt_col_from_to(df, 'QuoteID', '算法母单编号')
+    jiaoyiriqi = cvt_col_from_to(df, 'Date', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jiaoyiriqi.iloc[0].values[0]
+    ## 交易市场
+    shichangleibie = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    zijinzhanghumingcheng = cvt_col_from_to(df, 'ClientName', '资金账户名称')
+    # 算法类型
+    suanfaleixing = cvt_col_from_to(df, 'Date', '算法类型', lambda x: algo_type)  # 固定拆单0
+    # 算法供应商
+    suanfagongyingshang = cvt_col_from_to(df, 'Date', '算法供应商', lambda x: '多策略')  # 固定多策略
+    zhengquandaima = cvt_col_from_to(df, '证券代码', '证券代码')
+    weituoleixing = cvt_col_from_to(df, '价格类型', '委托类型', lambda x: get_index_from_list(order_type, x))
+    maimaifangxiang = cvt_col_from_to(df, '买卖方向', '买卖方向', lambda x: get_index_from_list(side, x))
+    weituojiage = cvt_col_from_to(df, '委托价格(港股通单位为港币)', '委托价格')
+    weituoshuliang = cvt_col_from_to(df, '委托数量', '委托数量')
+    # 委托时间
+    weituoshijian = time_apppend(df, '委托日期', '委托时间', '委托时间')
+    chengjiaojiage = cvt_col_from_to(df, '成交均价(港股通单位为港币)', '成交价格')
+    chengjiaoshuliang = cvt_col_from_to(df, '成交数量', '成交数量')
+    # 成交时间（使用委托时间）
+    chengjiaoshijian = weituoshijian
+    weituozhuangtai = cvt_col_from_to(df, '委托状态', '委托状态', lambda x: get_index_from_list(order_status, x))
+    shouxufei = cvt_col_from_to(df, '总费用', '手续费')
+    # 算法实例
+    # suanfashili = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
+    suanfashili = pd.DataFrame({'算法实例': [103] * len(weituoshijian)})
+    return pd.concat(
+        [suanfazidanbianhao, suanfamudanbianhao, jiaoyiriqi, shichangleibie, zijinzhanghumingcheng, suanfaleixing,
+         suanfashili, suanfagongyingshang, zhengquandaima, weituoleixing, maimaifangxiang, weituojiage,
+         weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
+         shouxufei], axis=1)
 
-def cvt_ato_algoorder_1(df):  # T0 母单
+# 未完成
+def cvt_atgo_algoorder(df, algo_type):
+    global glob_date
     sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
     jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jyrq.iloc[0].values[0]
     zjzhmc = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
-    sflx = cvt_col_from_to(df, '产品名称', '算法类型', lambda x: 1)  # 固定T0  是1
-    ### 算法实例
+    sflx = cvt_col_from_to(df, '产品名称', '算法类型', lambda x: algo_type)  # 固定T0  是1
+    # 算法实例
+    # sfsl = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
+    sfsl = cvt_col_from_to(df, '产品名称', '算法实例', lambda x: '103')
+    sfgys = cvt_col_from_to(df, '产品名称', '算法供应商', lambda x: '多策略')  # 固定 多策略
+    rws = cvt_col_from_to(df, '任务数量', '任务数')
+    zqdm = cvt_col_from_to(df, '证券代码', '证券代码')
+    jylb = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    mdfx1 = cvt_col_from_to(df, '买入方向', '买卖方向1', lambda x: get_index_from_list(side, x))
+    mdfx2 = cvt_col_from_to(df, '卖出方向', '买卖方向2', lambda x: get_index_from_list(side, x))
+    kssj = cvt_col_from_to(df, '开始时间', '开始时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+    jssj = cvt_col_from_to(df, '结束时间', '结束时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+    xdsj = cvt_col_from_to(df, '开始时间', '下单时间', lambda x: pd.to_datetime(x).strftime('%Y%m%d%H%M%S'))
+
+    merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
+                           mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
+    return merged_df
+
+# 未完成
+def cvt_atx_actualorder(df, algo_type):  # algo_type=0/1
+    global glob_date
+    suanfazidanbianhao = cvt_col_from_to(df, '委托编号', '算法子单编号')
+    suanfamudanbianhao = cvt_col_from_to(df, '母单编号', '算法母单编号')
+    jiaoyiriqi = cvt_col_from_to(df, '委托日期', '交易日期')
+    glob_date = str(jiaoyiriqi.iloc[0].values[0])
+    shichangleibie = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
+    zijinzhanghumingcheng = cvt_col_from_to(df, '资金账号', '资金账户名称')
+    # 算法类型
+    suanfaleixing = cvt_col_from_to(df, '资产账户名称', '算法类型', lambda x: algo_type)  # 固定拆单0
+    # 算法供应商
+    suanfagongyingshang = cvt_col_from_to(df, '资产账户名称', '算法供应商', lambda x: '多策略')  # 固定多策略
+    zhengquandaima = cvt_col_from_to(df, '证券代码', '证券代码', lambda x: x.split('.')[0])
+    ### 委托类型
+    # weituoleixing = cvt_col_from_to(df, '价格类型', '委托类型', lambda x: get_index_from_list(order_type, x))
+    maimaifangxiang = cvt_col_from_to(df, '交易方向', '买卖方向', lambda x: get_index_from_list(side, x))
+    weituojiage = cvt_col_from_to(df, '委托价格(港股通单位为港币)', '委托价格')
+    weituoshuliang = cvt_col_from_to(df, '委托数量', '委托数量')
+    # 委托时间
+    weituoshijian = time_apppend(df, '委托日期', '委托时间', '委托时间')
+    chengjiaojiage = cvt_col_from_to(df, '成交均价(港股通单位为港币)', '成交价格')
+    chengjiaoshuliang = cvt_col_from_to(df, '成交数量', '成交数量')
+    # 成交时间（使用委托时间）
+    chengjiaoshijian = weituoshijian
+    weituozhuangtai = cvt_col_from_to(df, '委托状态', '委托状态', lambda x: get_index_from_list(order_status, x))
+    shouxufei = cvt_col_from_to(df, '总费用', '手续费')
+    # 算法实例
+    # suanfashili = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
+    suanfashili = pd.DataFrame({'算法实例': [103] * len(weituoshijian)})
+    return pd.concat(
+        [suanfazidanbianhao, suanfamudanbianhao, jiaoyiriqi, shichangleibie, zijinzhanghumingcheng, suanfaleixing,
+         suanfashili, suanfagongyingshang, zhengquandaima, weituoleixing, maimaifangxiang, weituojiage,
+         weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
+         shouxufei], axis=1)
+
+# 未完成
+def cvt_atx_algoorder(df, algo_type):
+    global glob_date
+    sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
+    jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    glob_date = jyrq.iloc[0].values[0]
+    zjzhmc = cvt_col_from_to(df, '资产账户名称', '资金账户名称')
+    sflx = cvt_col_from_to(df, '产品名称', '算法类型', lambda x: algo_type)  # 固定T0  是1
+    # 算法实例
+    # sfsl = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
     sfsl = cvt_col_from_to(df, '产品名称', '算法实例', lambda x: '103')
     sfgys = cvt_col_from_to(df, '产品名称', '算法供应商', lambda x: '多策略')  # 固定 多策略
     rws = cvt_col_from_to(df, '任务数量', '任务数')
