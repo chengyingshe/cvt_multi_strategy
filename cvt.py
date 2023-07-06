@@ -124,7 +124,9 @@ def save_csv_to(df, type, sys_type, algo_type):
     else:
         output_file_name += '_ATGO'
     output_file_name += '_拆单.csv' if algo_type == 0 else '_T0.csv'
-    df.to_csv(os.path.join(output_dir, output_file_name), index=False)
+    output_file_path = os.path.join(output_dir, output_file_name)
+    df.to_csv(output_file_path, index=False)
+    print(f'成功生成文件 {output_file_path}')
 
 
 def time_apppend(df, origin_date_name, original_time_name, target_date_name):  # return一个20230504123800的dataFrame
@@ -360,10 +362,10 @@ def cvt_atgo_algoorder(df, algo_type):  # ATGO 母单 algo_type=0/1  对algoNomi
     rws = cvt_col_from_to(df, 'TaskQty', '任务数')
     zqdm = cvt_col_from_to(df, 'Symbol', '证券代码')
 
-    jylb = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))  ###没找到
+    jylb = cvt_col_from_to(df, 'Symbol', '市场类别', lambda x: 1 if x.split('.')[1] == 'SZ' else 2)  ###没找到
     if algo_type == 0:  # 拆单
         mdfx1 = cvt_col_from_to(df, 'Side', '买卖方向1', lambda x: get_index_from_list(side_atgo, x))
-        mdfx2 = cvt_col_from_to(df, '交易方向', '买卖方向2', lambda x: 0)
+        mdfx2 = cvt_col_from_to(df, 'Side', '买卖方向2', lambda x: 0)
     else:  # T0
         mdfx1 = cvt_col_from_to(df, 'Side', '买卖方向1', lambda x: 'T0')
         mdfx2 = cvt_col_from_to(df, 'Side', '买卖方向2', lambda x: 'T0')
@@ -476,26 +478,26 @@ def cvt():
             save_csv_to(cvt_ato_actualorder_1(pd.read_excel(li[0])), 0, 0, 1)
             # save_csv_to(cvt_ato_algoorder_1(pd.read_excel(li[1])), 1, 0)
     if atx_dir != '':
-        atx_dir_0 = os.path.join(ato_dir, '0')
-        atx_dir_1 = os.path.join(ato_dir, '1')
+        atx_dir_0 = os.path.join(atx_dir, '0')
+        atx_dir_1 = os.path.join(atx_dir, '1')
         if len(os.listdir(atx_dir_0)) > 0:
             li = get_excel_path_list_from_dir(atx_dir_0, ['algoActual.csv', 'algoNominal.csv'])
-            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 0), 0, 0, 0)
+            save_csv_to(cvt_atx_actualorder(pd.read_csv(li[0], encoding='gbk'), 0), 0, 1, 0)
             # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 0), 1, 0)
         if len(os.listdir(atx_dir_1)) > 0:
             li = get_excel_path_list_from_dir(atx_dir_1, ['algoActual.csv', 'algoNominal.csv'])
-            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 1), 0, 0, 1)
+            save_csv_to(cvt_atx_actualorder(pd.read_csv(li[0], encoding='gbk'), 1), 0, 1, 1)
             # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 1), 1, 0)
     if atgo_dir != '':
-        atgo_dir_0 = os.path.join(ato_dir, '0')
-        atgo_dir_1 = os.path.join(ato_dir, '1')
+        atgo_dir_0 = os.path.join(atgo_dir, '0')
+        atgo_dir_1 = os.path.join(atgo_dir, '1')
         if len(os.listdir(atgo_dir_0)) > 0:
             li = get_excel_path_list_from_dir(atgo_dir_0, ['algoActual.csv', 'algoNominal.csv'])
-            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 0), 0, 0, 0)
+            save_csv_to(cvt_atgo_actualorder(pd.read_csv(li[0], encoding='gbk'), 0), 0, 2, 0)
             # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 0), 1, 0)
         if len(os.listdir(atgo_dir_1)) > 0:
             li = get_excel_path_list_from_dir(atgo_dir_1, ['algoActual.csv', 'algoNominal.csv'])
-            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 1), 0, 0, 1)
+            save_csv_to(cvt_atgo_actualorder(pd.read_csv(li[0], encoding='gbk'), 1), 0, 2, 1)
             # save_csv_to(cvt_atx_actualorder(pd.read_excel(li[1]), 1), 1, 0)
 
 if __name__ == '__main__':
