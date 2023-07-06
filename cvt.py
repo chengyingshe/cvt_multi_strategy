@@ -113,8 +113,17 @@ def get_algo_instance(account_user, symbol, client_broker_map, mapping_broker_di
     return 103
 
 
-def save_csv_to(df, type=0):  # 0->子单，1->母单
-    output_file_name = 'ActualOrder.csv' if type == 0 else 'AlgoOrder.csv'
+# type : 0->子单，1->母单
+# sys_type : 0->ato, 1->atx, 2->atgo
+def save_csv_to(df, type, sys_type, algo_type):
+    output_file_name = 'ActualOrder' if type == 0 else 'AlgoOrder'
+    if sys_type == 0:
+        output_file_name += '_ATO'
+    elif sys_type == 1:
+        output_file_name += '_ATX'
+    else:
+        output_file_name += '_ATGO'
+    output_file_name += '_拆单.csv' if algo_type == 0 else '_T0.csv'
     df.to_csv(os.path.join(output_dir, output_file_name), index=False)
 
 
@@ -128,16 +137,19 @@ def time_apppend(df, origin_date_name, original_time_name, target_date_name):  #
     return result
 
 
-def get_excel_path_list_from_dir(file_dir, pat):  # pat为正则表达式数组
+def get_excel_path_list_from_dir(file_dir, pat):  # pat为正则表达式数组 定长2
     matching_files = []
-    # 遍历文件夹中的所有文件
+    # 按照pat中元素顺序 遍历文件夹中的所有文件
     for file_name in os.listdir(file_dir):
-        # 判断文件名开头是否匹配正则表达式1或正则表达式2，并且文件名末尾是否为指定日期
-        if any(re.match(regex, file_name) for regex in pat):
-            # 将满足条件的文件添加到列表中
-            file_path = os.path.join(file_dir, file_name)
+        if re.match(pat[0], file_name) :
+            file_path = os.path.join(file_dir,file_name)
             matching_files.append(file_path)
-
+            break
+    for file_name in os.listdir(file_dir):
+        if re.match(pat[1], file_name) :
+            file_path = os.path.join(file_dir,file_name)
+            matching_files.append(file_path)
+            break
     return matching_files
 
 
@@ -186,6 +198,7 @@ def cvt_ato_actualorder_0(df):  # ATO 拆单 子单
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
          shouxufei], axis=1)
 
+
 def cvt_ato_actualorder_1(df):  # ATO T0 子单
     global glob_date
     suanfazidanbianhao = cvt_col_from_to(df, '委托序号', '算法子单编号')
@@ -220,6 +233,7 @@ def cvt_ato_actualorder_1(df):  # ATO T0 子单
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
          shouxufei], axis=1)
 
+
 def cvt_ato_algoorder_0(df):  # ATO 拆单 母单
     global glob_date
     sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
@@ -242,6 +256,7 @@ def cvt_ato_algoorder_0(df):  # ATO 拆单 母单
     merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
                            mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
     return merged_df
+
 
 def cvt_ato_algoorder_1(df):  # ATO T0 母单
     global glob_date
@@ -267,7 +282,10 @@ def cvt_ato_algoorder_1(df):  # ATO T0 母单
                            mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
     return merged_df
 
+
 side_atgo = ['', 'B', 'S', 'CB', 'SS', 'SB', 'CB', '0']
+
+
 # 买卖方向—B 为买，S 为卖，CB 为买券还券，SS 为融券卖出，
 # SB 为融资买入，CB 为买券还券，0 为 T0
 
@@ -282,7 +300,11 @@ def time_process_atgo(df, date, time, col_name):  # atgo 的时间合并工具
     res = pd.DataFrame({col_name: date_data[date] + time_data[time]})
     return res
 
-# 还差委托状态
+
+order_status_atgo = ['', '', 'New', 'PartialFill', 'Filled', 'Canceled', 'PendingCancel', 'Rejected', '', '', '',
+                     'PendingNew', 'Stop']
+
+# ATGO子单(已完成)
 def cvt_atgo_actualorder(df, algo_type):  # ATGO 子单 algo_type=0/1
     global glob_date
     suanfazidanbianhao = cvt_col_from_to(df, 'ClOrdID', '算法子单编号')
@@ -298,7 +320,7 @@ def cvt_atgo_actualorder(df, algo_type):  # ATGO 子单 algo_type=0/1
     suanfagongyingshang = cvt_col_from_to(df, 'Date', '算法供应商', lambda x: '多策略')  # 固定多策略
     zhengquandaima = cvt_col_from_to(df, 'Symbol', '证券代码', lambda x: x.split('.')[0])
     weituoleixing = cvt_col_from_to(df, 'OrdType', '委托类型', lambda x: 1)  # 固定为限价
-    maimaifangxiang = cvt_col_from_to(df, 'Side', '买卖方向', lambda x: get_index_from_list(side_atgo, x))
+    maimaifangxiang = cvt_col_from_to(df, 'Side', '买卖方向', lambda x: get_index_from_list(side_atgo, x) if get_index_from_list(side_atgo, x) != 12 else 7)
     weituojiage = cvt_col_from_to(df, 'Price', '委托价格')
     weituoshuliang = cvt_col_from_to(df, 'OrderQty', '委托数量')
     # 委托时间
@@ -312,7 +334,7 @@ def cvt_atgo_actualorder(df, algo_type):  # ATGO 子单 algo_type=0/1
     # 成交时间（使用委托时间）
     chengjiaoshijian = weituoshijian
     ### 委托状态
-    weituozhuangtai = cvt_col_from_to(df, 'OrdStatus', '委托状态', lambda x: get_index_from_list(order_status, x))
+    weituozhuangtai = cvt_col_from_to(df, 'OrdStatus', '委托状态', lambda x: get_index_from_list(order_status_atgo, x))
     shouxufei = cvt_col_from_to(df, 'OtherFee', '手续费')
     # 算法实例
     # suanfashili = get_algo_instance_df(df, 'ClientName', 'Symbol', '算法实例')
@@ -376,9 +398,9 @@ def cvt_atx_actualorder(df, algo_type):  # ATX 子单 algo_type=0/1
     shichangleibie = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
     zijinzhanghumingcheng = cvt_col_from_to(df, '资金账号', '资金账户名称')
     # 算法类型
-    suanfaleixing = cvt_col_from_to(df, '资产账户名称', '算法类型', lambda x: algo_type)  # 固定拆单0
+    suanfaleixing = cvt_col_from_to(df, '证券代码', '算法类型', lambda x: algo_type)  # 固定拆单0
     # 算法供应商
-    suanfagongyingshang = cvt_col_from_to(df, '资产账户名称', '算法供应商', lambda x: '多策略')  # 固定多策略
+    suanfagongyingshang = cvt_col_from_to(df, '证券代码', '算法供应商', lambda x: '多策略')  # 固定多策略
     zhengquandaima = cvt_col_from_to(df, '证券代码', '证券代码', lambda x: x.split('.')[0])
     # 委托类型
     weituoleixing = cvt_col_from_to(df, '证券代码', '委托类型', lambda x: 1)  # 委托类型固定为1
@@ -395,7 +417,7 @@ def cvt_atx_actualorder(df, algo_type):  # ATX 子单 algo_type=0/1
     chengjiaoshuliang = cvt_col_from_to(df, '成交数量', '成交数量')
     # 成交时间（使用委托时间）
     chengjiaoshijian = weituoshijian
-    weituozhuangtai = cvt_col_from_to(df, '子弹状态', '委托状态', lambda x: get_index_from_list(order_status, x))
+    weituozhuangtai = cvt_col_from_to(df, '子单状态', '委托状态', lambda x: get_index_from_list(order_status, x))
     shouxufei = cvt_col_from_to(df, '其他费用', '手续费')
     # 算法实例
     # suanfashili = get_algo_instance_df(df, '资产账户名称', '证券代码', '算法实例')
@@ -406,12 +428,11 @@ def cvt_atx_actualorder(df, algo_type):  # ATX 子单 algo_type=0/1
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
          shouxufei], axis=1)
 
-
 # 未完成 90%
 def cvt_atx_algoorder(df, algo_type):  # ATX 母单 algo_type=0/1
     global glob_date
     sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
-    jyrq = cvt_col_from_to(df, '交易日期', '交易日期', lambda x: x.replace('/', ''))
+    jyrq = cvt_col_from_to(df, '交易日期', '交易日期')
     glob_date = jyrq.iloc[0].values[0]
     zjzhmc = cvt_col_from_to(df, '资金账号', '资金账户名称')
     sflx = cvt_col_from_to(df, '母单编号', '算法类型', lambda x: algo_type)
@@ -428,7 +449,7 @@ def cvt_atx_algoorder(df, algo_type):  # ATX 母单 algo_type=0/1
         mdfx1 = cvt_col_from_to(df, '交易方向', '买卖方向1', lambda x: get_index_from_list(side, x))
         mdfx2 = cvt_col_from_to(df, '交易方向', '买卖方向2', lambda x: 0)
     else:  # T0
-        mdfx1 = (df, '买入方向', '买卖方向1', lambda x: get_index_from_list(side, x))
+        mdfx1 = cvt_col_from_to(df, '买入方向', '买卖方向1', lambda x: get_index_from_list(side, x))
         mdfx2 = cvt_col_from_to(df, '卖出方向', '买卖方向2', lambda x: get_index_from_list(side, x))
 
     ###
@@ -440,16 +461,42 @@ def cvt_atx_algoorder(df, algo_type):  # ATX 母单 algo_type=0/1
                            mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
     return merged_df
 
-
 # 主函数
 def cvt():
-    # ATO
     get_config()
-    ato_path = '.\各产品线结算格式\ATO/委托查询_20230614.xlsx'
-    df = pd.read_excel(ato_path)
-    new_df = cvt_ato_actualorder_0(df)
-    save_csv_to(new_df, type=0)
-
+    if ato_dir != '':
+        ato_dir_0 = os.path.join(ato_dir, '0')
+        ato_dir_1 = os.path.join(ato_dir, '1')
+        if len(os.listdir(ato_dir_0)) > 0:
+            li = get_excel_path_list_from_dir(ato_dir_0, ['委托查询_\d+.xlsx', '绩效查询_母单绩效_汇总_\d+.xlsx'])
+            save_csv_to(cvt_ato_actualorder_0(pd.read_excel(li[0])), 0, 0, 0)
+            # save_csv_to(cvt_ato_algoorder_0(pd.read_excel(li[1])), 1, 0)
+        if len(os.listdir(ato_dir_1)) > 0:
+            li = get_excel_path_list_from_dir(ato_dir_0, ['委托查询_\d+.xlsx', '母单收益_\d+.xlsx'])
+            save_csv_to(cvt_ato_actualorder_1(pd.read_excel(li[0])), 0, 0, 1)
+            # save_csv_to(cvt_ato_algoorder_1(pd.read_excel(li[1])), 1, 0)
+    if atx_dir != '':
+        atx_dir_0 = os.path.join(ato_dir, '0')
+        atx_dir_1 = os.path.join(ato_dir, '1')
+        if len(os.listdir(atx_dir_0)) > 0:
+            li = get_excel_path_list_from_dir(atx_dir_0, ['algoActual.csv', 'algoNominal.csv'])
+            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 0), 0, 0, 0)
+            # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 0), 1, 0)
+        if len(os.listdir(atx_dir_1)) > 0:
+            li = get_excel_path_list_from_dir(atx_dir_1, ['algoActual.csv', 'algoNominal.csv'])
+            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 1), 0, 0, 1)
+            # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 1), 1, 0)
+    if atgo_dir != '':
+        atgo_dir_0 = os.path.join(ato_dir, '0')
+        atgo_dir_1 = os.path.join(ato_dir, '1')
+        if len(os.listdir(atgo_dir_0)) > 0:
+            li = get_excel_path_list_from_dir(atgo_dir_0, ['algoActual.csv', 'algoNominal.csv'])
+            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 0), 0, 0, 0)
+            # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 0), 1, 0)
+        if len(os.listdir(atgo_dir_1)) > 0:
+            li = get_excel_path_list_from_dir(atgo_dir_1, ['algoActual.csv', 'algoNominal.csv'])
+            save_csv_to(cvt_atx_actualorder(pd.read_excel(li[0]), 1), 0, 0, 1)
+            # save_csv_to(cvt_atx_actualorder(pd.read_excel(li[1]), 1), 1, 0)
 
 if __name__ == '__main__':
     cvt()
