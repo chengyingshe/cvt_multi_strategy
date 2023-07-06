@@ -5,31 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e639f0f1-f842-402a-bead-a4f576b5cd8d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/cvt1.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Untitled.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cvt.py" beforeDir="false" afterPath="$PROJECT_DIR$/cvt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/ATGO结算说明.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/algoActual.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/algoNominal.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/algoSummary.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/algoSummaryBasketId.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/algoSummaryBuyAndSell.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/algoSummaryFutureTotal.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/data(20230609T160019).zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/t0Overnight.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATGO/t0Summary.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATO/0/成交查询_20230614.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATO/0/绩效查询_母单绩效_汇总_20230614.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATO/0/绩效查询_母单绩效_汇总_20230614.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATO/1/委托查询_20230630.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATO/1/委托查询_20230630.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/T0Actual.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/T0Nominal.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/T0Overnight.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/T0SummaryClient.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/algoActual.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/algoNominal.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/algoSummaryBasketId.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/algoSummaryClient.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/data(20230606).zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/0/algoNominal.csv" beforeDir="false" afterPath="$PROJECT_DIR$/上传订单转换工具所需文件/各产品线结算格式/ATX/0/algoNominal.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,10 +38,17 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Kafang\cvt_multi_strategy" />
+      <recent name="E:\Kafang" />
+    </key>
+  </component>
   <component name="RunManager">
-    <configuration name="cvt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="cvt1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="cvt_multi_strategy" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -74,7 +60,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/cvt.py" />
+      <option name="SCRIPT_NAME" value="E:\Kafang\cvt_multi_strategy\cvt1.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -85,7 +71,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.cvt" />
+        <item itemvalue="Python.cvt1" />
       </list>
     </recent_temporary>
   </component>
