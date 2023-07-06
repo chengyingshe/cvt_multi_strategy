@@ -306,7 +306,6 @@ def time_process_atgo(df, date, time, col_name):  # atgo 的时间合并工具
 order_status_atgo = ['', '', 'New', 'PartialFill', 'Filled', 'Canceled', 'PendingCancel', 'Rejected', '', '', '',
                      'PendingNew', 'Stop']
 
-# ATGO子单(已完成)
 def cvt_atgo_actualorder(df, algo_type):  # ATGO 子单 algo_type=0/1
     global glob_date
     suanfazidanbianhao = cvt_col_from_to(df, 'ClOrdID', '算法子单编号')
@@ -347,7 +346,7 @@ def cvt_atgo_actualorder(df, algo_type):  # ATGO 子单 algo_type=0/1
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
          shouxufei], axis=1)
 
-# 未完成 70%
+
 def cvt_atgo_algoorder(df, algo_type):  # ATGO 母单 algo_type=0/1  对algoNominal文件解析
     global glob_date
     sfmdbh = cvt_col_from_to(df, 'ClOrdID', '算法母单编号')
@@ -370,11 +369,9 @@ def cvt_atgo_algoorder(df, algo_type):  # ATGO 母单 algo_type=0/1  对algoNomi
         mdfx1 = cvt_col_from_to(df, 'Side', '买卖方向1', lambda x: 'T0')
         mdfx2 = cvt_col_from_to(df, 'Side', '买卖方向2', lambda x: 'T0')
 
-    # 时间要改   已改
     kssj = time_process_atgo(df, 'Date', 'StartTime', '开始时间')
     jssj = time_process_atgo(df, 'Date', 'EndTime', '结束时间')
     xdsj = kssj
-
     merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
                            mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
     return merged_df
@@ -390,7 +387,6 @@ def time_process_atx(df, date, time, col_name):  # atx 的时间合并工具
     res = pd.DataFrame({col_name: date_data[date] + time_data[time]})
     return res
 
-# ATX子单(已完成)
 def cvt_atx_actualorder(df, algo_type):  # ATX 子单 algo_type=0/1
     global glob_date
     suanfazidanbianhao = cvt_col_from_to(df, '委托编号', '算法子单编号')
@@ -430,7 +426,6 @@ def cvt_atx_actualorder(df, algo_type):  # ATX 子单 algo_type=0/1
          weituoshuliang, weituoshijian, chengjiaojiage, chengjiaoshuliang, chengjiaoshijian, weituozhuangtai,
          shouxufei], axis=1)
 
-# 未完成 90%
 def cvt_atx_algoorder(df, algo_type):  # ATX 母单 algo_type=0/1
     global glob_date
     sfmdbh = cvt_col_from_to(df, '母单编号', '算法母单编号')
@@ -445,7 +440,6 @@ def cvt_atx_algoorder(df, algo_type):  # ATX 母单 algo_type=0/1
     rws = cvt_col_from_to(df, '任务数量', '任务数')
     zqdm = cvt_col_from_to(df, '证券代码', '证券代码')
     jylb = cvt_col_from_to(df, '交易市场', '市场类别', lambda x: get_index_from_list(market_type, x))
-
     # 跟algo_type有关
     if algo_type == 0:  # 拆单
         mdfx1 = cvt_col_from_to(df, '交易方向', '买卖方向1', lambda x: get_index_from_list(side, x))
@@ -454,11 +448,9 @@ def cvt_atx_algoorder(df, algo_type):  # ATX 母单 algo_type=0/1
         mdfx1 = cvt_col_from_to(df, '买入方向', '买卖方向1', lambda x: get_index_from_list(side, x))
         mdfx2 = cvt_col_from_to(df, '卖出方向', '买卖方向2', lambda x: get_index_from_list(side, x))
 
-    ###
     kssj = time_process_atx(df, '交易日期', '开始时间', '开始时间')
     jssj = time_process_atx(df, '交易日期', '开始时间', '结束时间')
     xdsj = kssj
-
     merged_df = pd.concat([sfmdbh, jyrq, zjzhmc, sflx, sfsl, sfgys, rws, zqdm, jylb,
                            mdfx1, mdfx2, kssj, jssj, xdsj], axis=1)
     return merged_df
@@ -472,33 +464,33 @@ def cvt():
         if len(os.listdir(ato_dir_0)) > 0:
             li = get_excel_path_list_from_dir(ato_dir_0, ['委托查询_\d+.xlsx', '绩效查询_母单绩效_汇总_\d+.xlsx'])
             save_csv_to(cvt_ato_actualorder_0(pd.read_excel(li[0])), 0, 0, 0)
-            # save_csv_to(cvt_ato_algoorder_0(pd.read_excel(li[1])), 1, 0)
+            save_csv_to(cvt_ato_algoorder_0(pd.read_excel(li[1])), 1, 0, 0)
         if len(os.listdir(ato_dir_1)) > 0:
             li = get_excel_path_list_from_dir(ato_dir_0, ['委托查询_\d+.xlsx', '母单收益_\d+.xlsx'])
             save_csv_to(cvt_ato_actualorder_1(pd.read_excel(li[0])), 0, 0, 1)
-            # save_csv_to(cvt_ato_algoorder_1(pd.read_excel(li[1])), 1, 0)
+            save_csv_to(cvt_ato_algoorder_1(pd.read_excel(li[1])), 1, 0, 1)
     if atx_dir != '':
         atx_dir_0 = os.path.join(atx_dir, '0')
         atx_dir_1 = os.path.join(atx_dir, '1')
         if len(os.listdir(atx_dir_0)) > 0:
             li = get_excel_path_list_from_dir(atx_dir_0, ['algoActual.csv', 'algoNominal.csv'])
             save_csv_to(cvt_atx_actualorder(pd.read_csv(li[0], encoding='gbk'), 0), 0, 1, 0)
-            # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 0), 1, 0)
+            save_csv_to(cvt_atx_algoorder(pd.read_csv(li[1], encoding='gbk'), 0), 1, 1, 0)
         if len(os.listdir(atx_dir_1)) > 0:
-            li = get_excel_path_list_from_dir(atx_dir_1, ['algoActual.csv', 'algoNominal.csv'])
+            li = get_excel_path_list_from_dir(atx_dir_1, ['T0Actual.csv', 'T0Nominal.csv'])
             save_csv_to(cvt_atx_actualorder(pd.read_csv(li[0], encoding='gbk'), 1), 0, 1, 1)
-            # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 1), 1, 0)
+            save_csv_to(cvt_atx_algoorder(pd.read_csv(li[1], encoding='gbk'), 1), 1, 1, 1)
     if atgo_dir != '':
         atgo_dir_0 = os.path.join(atgo_dir, '0')
         atgo_dir_1 = os.path.join(atgo_dir, '1')
         if len(os.listdir(atgo_dir_0)) > 0:
             li = get_excel_path_list_from_dir(atgo_dir_0, ['algoActual.csv', 'algoNominal.csv'])
             save_csv_to(cvt_atgo_actualorder(pd.read_csv(li[0], encoding='gbk'), 0), 0, 2, 0)
-            # save_csv_to(cvt_atx_algoorder(pd.read_excel(li[1]), 0), 1, 0)
+            save_csv_to(cvt_atgo_algoorder(pd.read_csv(li[1], encoding='gbk'), 0), 1, 2, 0)
         if len(os.listdir(atgo_dir_1)) > 0:
             li = get_excel_path_list_from_dir(atgo_dir_1, ['algoActual.csv', 'algoNominal.csv'])
             save_csv_to(cvt_atgo_actualorder(pd.read_csv(li[0], encoding='gbk'), 1), 0, 2, 1)
-            # save_csv_to(cvt_atx_actualorder(pd.read_excel(li[1]), 1), 1, 0)
+            save_csv_to(cvt_atgo_algoorder(pd.read_csv(li[1], encoding='gbk'), 1), 1, 2, 1)
 
 if __name__ == '__main__':
     cvt()
